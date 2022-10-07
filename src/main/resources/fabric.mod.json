@@ -4,14 +4,14 @@
   "version": "${version}",
 
   "name": "Create",
-  "description": "Technology that empowers the player.",
+  "description": "Technology that empowers the player. THIS IS AN UNOFFICIAL PORT/BUILD - USE AT YOUR OWN RISK!",
   "authors": [
     "Fabricators of Create",
     "Creators of Create"
   ],
   "contact": {
-    "issues": "https://github.com/Fabricators-of-Create/Create/issues",
-    "sources": "https://github.com/Fabricators-of-Create/Create"
+    "issues": "https://github.com/alula/Create-1.19.2/issues",
+    "sources": "https://github.com/alula/Create-1.19.2"
   },
 
   "license": "MIT",
