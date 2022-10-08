@@ -73,9 +73,10 @@ public class AllFluids {
 							@Environment(EnvType.CLIENT)
 							public void run() {
 								PotionFluidVariantRenderHandler handler = new PotionFluidVariantRenderHandler();
-								SimpleFluidRenderHandler handler2 = new SimpleFluidRenderHandler(new ResourceLocation("create:fluid/potion_still"), new ResourceLocation("create:fluid/potion_flow"));
 								FluidVariantRendering.register(still, handler);
 								FluidVariantRendering.register(flowing, handler);
+								// TODO: remove when Registrate is fixed
+								SimpleFluidRenderHandler handler2 = new SimpleFluidRenderHandler(new ResourceLocation("create:fluid/potion_still"), new ResourceLocation("create:fluid/potion_flow"));
 								FluidRenderHandlerRegistry.INSTANCE.register(still, handler2);
 								FluidRenderHandlerRegistry.INSTANCE.register(flowing, handler2);
 							}
@@ -86,7 +87,7 @@ public class AllFluids {
 	public static final FluidEntry<VirtualFluid> TEA = REGISTRATE.virtualFluid("tea")
 			.lang("Builder's Tea")
 			.tag(AllTags.forgeFluidTag("tea"))
-			.fluidRenderingAttributes(() -> new SimpleFluidRenderHandler(new ResourceLocation("create:fluid/tea_still"), new ResourceLocation("create:fluid/tea_flow")))
+			.fluidRenderingAttributes(() -> new SimpleFluidRenderHandler(new ResourceLocation("create:fluid/tea_still"), new ResourceLocation("create:fluid/tea_flow"))) // TODO: remove when Registrate is fixed
 			.onRegisterAfter(Registry.ITEM_REGISTRY, tea -> {
 				Fluid still = tea.getSource();
 				Fluid flowing = tea.getFlowing();
@@ -114,7 +115,8 @@ public class AllFluids {
 					.bucket()
 					.tag(AllTags.forgeItemTag("buckets/honey"))
 					.build()
-					.fluidRenderingAttributes(() -> new SimpleFluidRenderHandler(new ResourceLocation("create:fluid/honey_still"), new ResourceLocation("create:fluid/honey_flow")))
+//					.fluidRenderingAttributes(() -> SimpleFluidRenderHandler::new)
+					.fluidRenderingAttributes(() -> new SimpleFluidRenderHandler(new ResourceLocation("create:fluid/honey_still"), new ResourceLocation("create:fluid/honey_flow"))) // TODO: remove when Registrate is fixed
 					.onRegisterAfter(Registry.ITEM_REGISTRY, honey -> {
 						Fluid source = honey.getSource();
 						FluidStorage.combinedItemApiProvider(HONEY_BOTTLE).register(context ->
@@ -142,7 +144,8 @@ public class AllFluids {
 							.tickRate(25)
 							.flowSpeed(3)
 							.blastResistance(100f))
-					.fluidRenderingAttributes(() -> new SimpleFluidRenderHandler(new ResourceLocation("create:fluid/chocolate_still"), new ResourceLocation("create:fluid/chocolate_flow")))
+//					.fluidRenderingAttributes(() -> SimpleFluidRenderHandler::new)
+					.fluidRenderingAttributes(() -> new SimpleFluidRenderHandler(new ResourceLocation("create:fluid/chocolate_still"), new ResourceLocation("create:fluid/chocolate_flow"))) // TODO: remove when Registrate is fixed
 					.onRegisterAfter(Registry.ITEM_REGISTRY, chocolate -> {
 						Fluid source = chocolate.getSource();
 						// transfer values
@@ -160,6 +163,7 @@ public class AllFluids {
 	// Load this class
 
 	public static void register() {
+		// TODO: remove this when Registrate is fixed
 		ClientSpriteRegistryCallback.event(TextureAtlas.LOCATION_BLOCKS).register((atlasTexture, registry) -> {
 			registry.register(new ResourceLocation("create:fluid/honey_still"));
 			registry.register(new ResourceLocation("create:fluid/honey_flow"));
