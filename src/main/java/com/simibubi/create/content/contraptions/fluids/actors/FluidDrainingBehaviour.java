@@ -196,6 +196,8 @@ public class FluidDrainingBehaviour extends FluidManipulationBehaviour {
 
 			if (!tileEntity.isVirtual()) {
 				world.updateSnapshots(ctx);
+				if (infinite)
+					return true;
 				world.setBlock(currentPos, emptied, 2 | 16);
 			}
 			affectedArea = BBHelper.encapsulate(affectedArea, currentPos);
