@@ -13,7 +13,9 @@
     "accessor.LivingEntityAccessor",
     "accessor.ServerLevelAccessor",
     "fabric.AbstractMinecartMixin",
-    "fabric.EntityMixin"
+    "fabric.EntityMixin",
+    "fabric.MultiPlayerGameModeMixin",
+    "fabric.MultiPlayerGameModeAccessor"
   ],
   "client": [
     "CameraMixin",
