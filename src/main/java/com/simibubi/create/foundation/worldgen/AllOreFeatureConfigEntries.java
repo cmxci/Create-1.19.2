@@ -9,6 +9,7 @@ import com.simibubi.create.foundation.data.DynamicDataProvider;
 import com.simibubi.create.foundation.utility.Couple;
 import com.simibubi.create.foundation.worldgen.OreFeatureConfigEntry.DatagenExtension;
 
+import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectionContext;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
@@ -16,8 +17,10 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.data.BuiltinRegistries;
 import net.minecraft.data.DataGenerator;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BiomeTags;
+import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -74,7 +77,8 @@ public class AllOreFeatureConfigEntries {
 
 	public static void modifyBiomes() {
 		for (OreFeatureConfigEntry entry : OreFeatureConfigEntry.ALL.values()) {
-			entry.biomeExt().modifyBiomes(BuiltinRegistries.PLACED_FEATURE);
+			BiomeModifications.addFeature(entry.datagenExt().biomeTag.equals(BiomeTags.IS_OVERWORLD) ? BiomeSelectors.foundInOverworld() : BiomeSelectors.foundInTheNether(), GenerationStep.Decoration.UNDERGROUND_ORES, ResourceKey.create(Registry.PLACED_FEATURE_REGISTRY, entry.id));
+//			entry.biomeExt().modifyBiomes(BuiltinRegistries.PLACED_FEATURE);
 		}
 	}
 
