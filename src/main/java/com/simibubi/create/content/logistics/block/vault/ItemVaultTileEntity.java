@@ -21,6 +21,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -37,6 +38,7 @@ public class ItemVaultTileEntity extends SmartTileEntity implements IMultiTileCo
 	protected boolean updateConnectivity;
 	protected int radius;
 	protected int length;
+	protected int color;
 	protected Axis axis;
 
 	protected boolean recalculateComparatorsNextTick = false;
@@ -55,6 +57,7 @@ public class ItemVaultTileEntity extends SmartTileEntity implements IMultiTileCo
 		itemCapability = null;
 		radius = 1;
 		length = 1;
+		color = 16;
 	}
 
 	@Override
@@ -67,6 +70,30 @@ public class ItemVaultTileEntity extends SmartTileEntity implements IMultiTileCo
 		if (!isController())
 			return;
 		ConnectivityHandler.formMulti(this);
+	}
+
+	@Override
+	@Nullable
+	public Object getExtraData() {
+		return color;
+	}
+
+	@Override
+	public void setExtraData(@Nullable Object data) {
+		if (data instanceof Integer)
+			if (data == null){
+				color = 16;
+			}else
+				color = (Integer) data;
+	}
+
+	@Override
+	public Object modifyExtraData(Object data) {
+		if (data instanceof Integer colors) {
+			colors |= color;
+			return colors;
+		}
+		return data;
 	}
 
 	protected void updateComparators() {
@@ -83,6 +110,24 @@ public class ItemVaultTileEntity extends SmartTileEntity implements IMultiTileCo
 					level.updateNeighbourForOutputSignal(pos.offset(x, y, z), getBlockState().getBlock());
 				}
 			}
+		}
+	}
+
+	public void applyColor(@Nullable DyeColor colorIn) {
+		int colorID = 16;
+		if (colorIn != null)
+			colorID = colorIn.getId();
+
+		for (BlockPos pos : ItemVaultBlock.getVaultBlocks(level, getController())) {
+			BlockState blockState = level.getBlockState(pos);
+			BlockEntity te = level.getBlockEntity(pos);
+			ItemVaultTileEntity vault = (ItemVaultTileEntity) te;
+			if (!ItemVaultBlock.isVault(blockState))
+				continue;
+			vault.getControllerTE().color = colorID;
+			level.setBlock(pos, blockState.setValue(ItemVaultBlock.COLOR, colorID), 22);
+			vault.setChanged();
+			vault.sendData();
 		}
 	}
 
@@ -187,6 +232,7 @@ public class ItemVaultTileEntity extends SmartTileEntity implements IMultiTileCo
 		if (isController()) {
 			radius = compound.getInt("Size");
 			length = compound.getInt("Length");
+			color = compound.getInt("Color");
 		}
 
 		if (!clientPacket) {
@@ -211,6 +257,7 @@ public class ItemVaultTileEntity extends SmartTileEntity implements IMultiTileCo
 		if (isController()) {
 			compound.putInt("Size", radius);
 			compound.putInt("Length", length);
+			compound.putInt("Color", color);
 		}
 
 		super.write(compound, clientPacket);
@@ -282,6 +329,12 @@ public class ItemVaultTileEntity extends SmartTileEntity implements IMultiTileCo
 			level.setBlock(getBlockPos(), state.setValue(ItemVaultBlock.LARGE, radius > 2), 6);
 		}
 		itemCapability = null;
+		if (isController()){
+			if (color < 16) {
+				applyColor(DyeColor.byId(color));
+			} else
+				applyColor(null);
+		}
 		setChanged();
 	}
 
@@ -305,12 +358,15 @@ public class ItemVaultTileEntity extends SmartTileEntity implements IMultiTileCo
 	@Override
 	public int getWidth() { return radius; }
 
+	public int getColor() { return color; }
+
+	public void setColor(int color) {this.color = color;}
+
 	@Override
 	public void setHeight(int height) { this.length = height; }
 
 	@Override
 	public void setWidth(int width) { this.radius = width; }
-
 	@Override
 	public boolean hasInventory() { return true; }
 }

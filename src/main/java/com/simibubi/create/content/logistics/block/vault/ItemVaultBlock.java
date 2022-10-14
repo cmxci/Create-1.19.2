@@ -5,19 +5,25 @@ import javax.annotation.Nullable;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllTileEntities;
 import com.simibubi.create.api.connectivity.ConnectivityHandler;
+import com.simibubi.create.content.contraptions.processing.EmptyingByBasin;
 import com.simibubi.create.content.contraptions.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.ITE;
 import com.simibubi.create.foundation.item.ItemHelper;
 import io.github.fabricators_of_create.porting_lib.block.CustomSoundTypeBlock;
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
+import io.github.fabricators_of_create.porting_lib.util.TagUtil;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -32,21 +38,32 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.BlockHitResult;
+
+import me.alphamode.forgetags.Tags;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public class ItemVaultBlock extends Block implements IWrenchable, ITE<ItemVaultTileEntity>, CustomSoundTypeBlock {
 
 	public static final Property<Axis> HORIZONTAL_AXIS = BlockStateProperties.HORIZONTAL_AXIS;
+
+	public static final IntegerProperty COLOR = IntegerProperty.create("color", 0, 16);
 	public static final BooleanProperty LARGE = BooleanProperty.create("large");
 
 	public ItemVaultBlock(Properties p_i48440_1_) {
 		super(p_i48440_1_);
-		registerDefaultState(defaultBlockState().setValue(LARGE, false));
+		registerDefaultState(defaultBlockState().setValue(LARGE, false)
+				.setValue(COLOR, 16));
 	}
 
 	@Override
 	protected void createBlockStateDefinition(Builder<Block, BlockState> pBuilder) {
-		pBuilder.add(HORIZONTAL_AXIS, LARGE);
+		pBuilder.add(HORIZONTAL_AXIS, LARGE, COLOR);
 		super.createBlockStateDefinition(pBuilder);
 	}
 
@@ -108,6 +125,24 @@ public class ItemVaultBlock extends Block implements IWrenchable, ITE<ItemVaultT
 		}
 	}
 
+	@Override
+	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand handIn,
+								 BlockHitResult hit){
+		ItemStack heldItem = player.getItemInHand(handIn);
+
+		boolean hasWater = EmptyingByBasin.emptyItem(world, heldItem, true)
+				.getFirst()
+				.getFluid()
+				.isSame(Fluids.WATER);
+		boolean isDye = heldItem.is(Tags.Items.DYES);
+		if (isDye || hasWater) {
+			if (!world.isClientSide)
+				withTileEntityDo(world, pos, te -> te.applyColor(TagUtil.getColorFromStack(heldItem)));
+			return InteractionResult.SUCCESS;
+		}
+		return InteractionResult.PASS;
+	}
+
 	public static boolean isVault(BlockState state) {
 		return AllBlocks.ITEM_VAULT.has(state);
 	}
@@ -119,13 +154,47 @@ public class ItemVaultBlock extends Block implements IWrenchable, ITE<ItemVaultT
 		return state.getValue(HORIZONTAL_AXIS);
 	}
 
+	public static DyeColor getVaultBlockColor(BlockState state) {
+		if (!isVault(state) || state.getValue(COLOR) == 16)
+			return null;
+		return DyeColor.byId(state.getValue(COLOR));
+	}
+
 	public static boolean isLarge(BlockState state) {
 		if (!isVault(state))
 			return false;
 		return state.getValue(LARGE);
 	}
 
-	@Override
+	public static List<BlockPos> getVaultBlocks(Level world, BlockPos controllerPos) {
+		List<BlockPos> blocks = new LinkedList<>();
+
+		BlockState blockState = world.getBlockState(controllerPos);
+		if (!AllBlocks.ITEM_VAULT.has(blockState))
+			return blocks;
+
+		BlockPos current = controllerPos;
+
+		Axis axis = blockState.getValue(HORIZONTAL_AXIS);
+		ItemVaultTileEntity vault = (ItemVaultTileEntity) world.getBlockEntity(current);
+		int length = vault.getHeight();
+		int radius = vault.getWidth();
+
+		boolean alongZ = axis == Axis.Z;
+		for (int yOffset = 0; yOffset < length; yOffset++) {
+			for (int xOffset = 0; xOffset < radius; xOffset++) {
+				for (int zOffset = 0; zOffset < radius; zOffset++) {
+					current = alongZ ? controllerPos.offset(xOffset, zOffset, yOffset) : controllerPos.offset(yOffset, xOffset, zOffset);
+					if (!AllBlocks.ITEM_VAULT.has(world.getBlockState(current)))
+						break;
+					blocks.add(current);
+				}
+			}
+		}
+		return blocks;
+	}
+
+		@Override
 	public BlockState rotate(BlockState state, Rotation rot) {
 		Axis axis = state.getValue(HORIZONTAL_AXIS);
 		return state.setValue(HORIZONTAL_AXIS, rot.rotate(Direction.fromAxisAndDirection(axis, AxisDirection.POSITIVE))
@@ -164,6 +233,7 @@ public class ItemVaultBlock extends Block implements IWrenchable, ITE<ItemVaultT
 			.map(ItemHelper::calcRedstoneFromInventory)
 			.orElse(0);
 	}
+
 
 	@Override
 	public BlockEntityType<? extends ItemVaultTileEntity> getTileEntityType() {

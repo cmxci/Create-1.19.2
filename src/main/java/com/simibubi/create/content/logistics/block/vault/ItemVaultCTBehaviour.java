@@ -1,5 +1,7 @@
 package com.simibubi.create.content.logistics.block.vault;
 
+import net.minecraft.world.item.DyeColor;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.AllSpriteShifts;
@@ -14,24 +16,24 @@ import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
-
 public class ItemVaultCTBehaviour extends ConnectedTextureBehaviour.Base {
 
 	@Override
 	public CTSpriteShiftEntry getShift(BlockState state, Direction direction, @Nullable TextureAtlasSprite sprite) {
 		Axis vaultBlockAxis = ItemVaultBlock.getVaultBlockAxis(state);
 		boolean small = !ItemVaultBlock.isLarge(state);
+		DyeColor color = ItemVaultBlock.getVaultBlockColor(state);
 		if (vaultBlockAxis == null)
 			return null;
 
-		if (direction.getAxis() == vaultBlockAxis)
-			return AllSpriteShifts.VAULT_FRONT.get(small);
+		if (direction.getAxis() == vaultBlockAxis){
+			return AllSpriteShifts.getVaultCT("front", color, small);}
 		if (direction == Direction.UP)
-			return AllSpriteShifts.VAULT_TOP.get(small);
+			return AllSpriteShifts.getVaultCT("top", color, small);
 		if (direction == Direction.DOWN)
-			return AllSpriteShifts.VAULT_BOTTOM.get(small);
+			return AllSpriteShifts.getVaultCT("bottom", color, small);
 
-		return AllSpriteShifts.VAULT_SIDE.get(small);
+		return AllSpriteShifts.getVaultCT("side", color, small);
 	}
 
 	@Override
