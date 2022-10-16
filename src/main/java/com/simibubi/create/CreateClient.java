@@ -45,6 +45,13 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 
+import net.fabricmc.fabric.api.client.render.fluid.v1.SimpleFluidRenderHandler;
+import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
+import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+
 public class CreateClient implements ClientModInitializer {
 
 	public static final SuperByteBufferCache BUFFER_CACHE = new SuperByteBufferCache();
@@ -105,6 +112,38 @@ public class CreateClient implements ClientModInitializer {
 		// causes class loading issues or something
 		// noinspection Convert2MethodRef
 		Mods.TRINKETS.executeIfInstalled(() -> () -> Trinkets.clientInit());
+
+		fluidRenderingFix();
+	}
+
+	// TODO: remove when Registrate is fixed
+	public void fluidRenderingFix() {
+		SimpleFluidRenderHandler potionHandler = new SimpleFluidRenderHandler(new ResourceLocation("create:fluid/potion_still"), new ResourceLocation("create:fluid/potion_flow"));
+		FluidRenderHandlerRegistry.INSTANCE.register(AllFluids.POTION.get().getSource(), potionHandler);
+		FluidRenderHandlerRegistry.INSTANCE.register(AllFluids.POTION.get().getFlowing(), potionHandler);
+
+		SimpleFluidRenderHandler teaHandler = new SimpleFluidRenderHandler(new ResourceLocation("create:fluid/tea_still"), new ResourceLocation("create:fluid/tea_flow"));
+		FluidRenderHandlerRegistry.INSTANCE.register(AllFluids.TEA.get().getSource(), teaHandler);
+		FluidRenderHandlerRegistry.INSTANCE.register(AllFluids.TEA.get().getFlowing(), teaHandler);
+
+		SimpleFluidRenderHandler honeyHandler = new SimpleFluidRenderHandler(new ResourceLocation("create:fluid/honey_still"), new ResourceLocation("create:fluid/honey_flow"));
+		FluidRenderHandlerRegistry.INSTANCE.register(AllFluids.HONEY.get().getSource(), honeyHandler);
+		FluidRenderHandlerRegistry.INSTANCE.register(AllFluids.HONEY.get().getFlowing(), honeyHandler);
+
+		SimpleFluidRenderHandler chocolateHandler = new SimpleFluidRenderHandler(new ResourceLocation("create:fluid/chocolate_still"), new ResourceLocation("create:fluid/chocolate_flow"));
+		FluidRenderHandlerRegistry.INSTANCE.register(AllFluids.CHOCOLATE.get().getSource(), chocolateHandler);
+		FluidRenderHandlerRegistry.INSTANCE.register(AllFluids.CHOCOLATE.get().getFlowing(), chocolateHandler);
+
+		ClientSpriteRegistryCallback.event(TextureAtlas.LOCATION_BLOCKS).register((atlasTexture, registry) -> {
+			registry.register(new ResourceLocation("create:fluid/honey_still"));
+			registry.register(new ResourceLocation("create:fluid/honey_flow"));
+			registry.register(new ResourceLocation("create:fluid/chocolate_still"));
+			registry.register(new ResourceLocation("create:fluid/chocolate_flow"));
+			registry.register(new ResourceLocation("create:fluid/tea_still"));
+			registry.register(new ResourceLocation("create:fluid/tea_flow"));
+			registry.register(new ResourceLocation("create:fluid/potion_still"));
+			registry.register(new ResourceLocation("create:fluid/potion_flow"));
+		});
 	}
 
 	public static void invalidateRenderers() {

@@ -28,9 +28,6 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
 import net.fabricmc.fabric.api.transfer.v1.fluid.base.EmptyItemFluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.base.FullItemFluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.client.render.fluid.v1.SimpleFluidRenderHandler;
-import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
-import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
@@ -42,9 +39,6 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 
 import static net.minecraft.world.item.Items.BUCKET;
 import static net.minecraft.world.item.Items.GLASS_BOTTLE;
@@ -75,10 +69,6 @@ public class AllFluids {
 								PotionFluidVariantRenderHandler handler = new PotionFluidVariantRenderHandler();
 								FluidVariantRendering.register(still, handler);
 								FluidVariantRendering.register(flowing, handler);
-								// TODO: remove when Registrate is fixed
-								SimpleFluidRenderHandler handler2 = new SimpleFluidRenderHandler(new ResourceLocation("create:fluid/potion_still"), new ResourceLocation("create:fluid/potion_flow"));
-								FluidRenderHandlerRegistry.INSTANCE.register(still, handler2);
-								FluidRenderHandlerRegistry.INSTANCE.register(flowing, handler2);
 							}
 						});
 					})
@@ -87,7 +77,7 @@ public class AllFluids {
 	public static final FluidEntry<VirtualFluid> TEA = REGISTRATE.virtualFluid("tea")
 			.lang("Builder's Tea")
 			.tag(AllTags.forgeFluidTag("tea"))
-			.fluidRenderingAttributes(() -> new SimpleFluidRenderHandler(new ResourceLocation("create:fluid/tea_still"), new ResourceLocation("create:fluid/tea_flow"))) // TODO: remove when Registrate is fixed
+//			.fluidRenderingAttributes(() -> new SimpleFluidRenderHandler(new ResourceLocation("create:fluid/tea_still"), new ResourceLocation("create:fluid/tea_flow"))) // TODO: remove when Registrate is fixed
 			.onRegisterAfter(Registry.ITEM_REGISTRY, tea -> {
 				Fluid still = tea.getSource();
 				Fluid flowing = tea.getFlowing();
@@ -116,7 +106,7 @@ public class AllFluids {
 					.tag(AllTags.forgeItemTag("buckets/honey"))
 					.build()
 //					.fluidRenderingAttributes(() -> SimpleFluidRenderHandler::new)
-					.fluidRenderingAttributes(() -> new SimpleFluidRenderHandler(new ResourceLocation("create:fluid/honey_still"), new ResourceLocation("create:fluid/honey_flow"))) // TODO: remove when Registrate is fixed
+//					.fluidRenderingAttributes(() -> new SimpleFluidRenderHandler(new ResourceLocation("create:fluid/honey_still"), new ResourceLocation("create:fluid/honey_flow"))) // TODO: remove when Registrate is fixed
 					.onRegisterAfter(Registry.ITEM_REGISTRY, honey -> {
 						Fluid source = honey.getSource();
 						FluidStorage.combinedItemApiProvider(HONEY_BOTTLE).register(context ->
@@ -145,7 +135,7 @@ public class AllFluids {
 							.flowSpeed(3)
 							.blastResistance(100f))
 //					.fluidRenderingAttributes(() -> SimpleFluidRenderHandler::new)
-					.fluidRenderingAttributes(() -> new SimpleFluidRenderHandler(new ResourceLocation("create:fluid/chocolate_still"), new ResourceLocation("create:fluid/chocolate_flow"))) // TODO: remove when Registrate is fixed
+//					.fluidRenderingAttributes(() -> new SimpleFluidRenderHandler(new ResourceLocation("create:fluid/chocolate_still"), new ResourceLocation("create:fluid/chocolate_flow"))) // TODO: remove when Registrate is fixed
 					.onRegisterAfter(Registry.ITEM_REGISTRY, chocolate -> {
 						Fluid source = chocolate.getSource();
 						// transfer values
@@ -163,17 +153,6 @@ public class AllFluids {
 	// Load this class
 
 	public static void register() {
-		// TODO: remove this when Registrate is fixed
-		ClientSpriteRegistryCallback.event(TextureAtlas.LOCATION_BLOCKS).register((atlasTexture, registry) -> {
-			registry.register(new ResourceLocation("create:fluid/honey_still"));
-			registry.register(new ResourceLocation("create:fluid/honey_flow"));
-			registry.register(new ResourceLocation("create:fluid/chocolate_still"));
-			registry.register(new ResourceLocation("create:fluid/chocolate_flow"));
-			registry.register(new ResourceLocation("create:fluid/tea_still"));
-			registry.register(new ResourceLocation("create:fluid/tea_flow"));
-			registry.register(new ResourceLocation("create:fluid/potion_still"));
-			registry.register(new ResourceLocation("create:fluid/potion_flow"));
-		});
 	}
 
 	@Nullable
